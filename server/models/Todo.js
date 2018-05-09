@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 let todoSchema = mongoose.Schema({
   text: {
     type:String,
