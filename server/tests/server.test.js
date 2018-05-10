@@ -1,14 +1,20 @@
 const expect = require('expect');
 const request = require('supertest');
-
+const {ObjectID} = require('mongodb');
 const app = require('../server')
 
 const Todo = require('../models/Todo');
 const User = require('../models/User');
 
 const todos = [
-  {text: 'test something todo 1'},
-  {text: 'test something todo 2'}
+  {
+    _id: new ObjectID(),
+    text: 'test something todo 1'
+  },
+  {
+    _id: new ObjectID(),
+    text: 'test something todo 2'
+  }
 ]
 
 beforeEach((done)=>{//this will be called before each mocha test run
@@ -65,4 +71,30 @@ describe('GET /todos',()=>{
     })
     .end(done);
   })
-})
+});
+
+describe('GEt /todos/:id',()=>{
+  it('should return todo doc',(done)=>{
+    request(app)
+    .get(`/todos/${todos[1]._id.toHexString()}`)
+    .expect(200)
+    .expect((res)=>{
+      expect(res.body.todo.text).toBe(todos[1].text);
+    })
+    .end(done);
+  })
+
+  it('should return 404 if todo not found', (done)=>{
+    request(app)
+    .get(`/todos/${(new ObjectID()).toHexString()}`)
+    .expect(404)
+    .end(done);
+  })
+
+  it('should return 404 for non-object ids', (done)=>{
+    request(app)
+    .get(`/todos/12345`)
+    .expect(404)
+    .end(done);
+  })
+});
