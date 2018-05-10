@@ -1,3 +1,7 @@
+require('./config/config.js');
+
+const port = process.env.PORT;
+
 const express = require('express');
 const _ = require('lodash');
 
@@ -75,8 +79,6 @@ app.patch('/todos/:id',(req,res)=>{
       res.send({todo});
     }).catch((e)=>res.status(400).send());
 })
-
-const port = process.env.PORT||3000;
 
 app.listen(port, ()=>{
   console.log('started on port '+port);
