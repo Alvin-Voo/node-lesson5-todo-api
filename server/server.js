@@ -1,4 +1,5 @@
 const express = require('express');
+const _ = require('lodash');
 
 const mongoose = require('./db/mongoose');
 const Todo = require('./models/Todo');
@@ -53,6 +54,26 @@ app.delete('/todos/:id',(req,res)=>{
       return res.send({todo})
     }
   ).catch((err)=>res.status(400).send());
+})
+
+app.patch('/todos/:id',(req,res)=>{
+  let id = req.params.id;
+  let body = _.pick(req.body, ['text','completed']);//request object is from user
+
+  if(!mongoose.isValidId(id)) return res.status(404).send();
+
+  if(_.isBoolean(body.completed) && body.completed){//using lodash to check if its boolean
+    body.completedAt = new Date().getTime();
+  }else{
+    body.completed = false;
+    body.completedAt = null;
+  }
+
+  Todo.findByIdAndUpdate(id,{$set: body},{new:true}).then(
+    (todo)=>{
+      if(!todo) return res.status(404).end();
+      res.send({todo});
+    }).catch((e)=>res.status(400).send());
 })
 
 const port = process.env.PORT||3000;
