@@ -19,8 +19,8 @@ app.post('/todos',(req,res)=>{
 
 app.get('/todos',(req,res)=>{
   Todo.find().then(
-    (docs)=>{//this will return an array of doc(s)
-      res.send({docs})//sending an object instead of just the array is better, since its more customizable
+    (todos)=>{//this will return an array of doc(s)
+      res.send({todos})//sending an object instead of just the array is better, since its more customizable
     },
     (err)=>res.status(400).send(err)
   )
