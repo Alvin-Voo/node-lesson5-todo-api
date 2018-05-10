@@ -13,7 +13,9 @@ const todos = [
   },
   {
     _id: new ObjectID(),
-    text: 'test something todo 2'
+    text: 'test something todo 2',
+    completed: true,
+    completedAt: 333
   }
 ]
 
@@ -23,11 +25,13 @@ beforeEach((done)=>{//this will be called before each mocha test run
   }).then(()=>done());
 });
 
+const agent = request.agent(app);
+
 describe('POST /todos',()=>{
   it('should create a new todo', (done)=>{
     let text = "some testing text";
 
-    request(app)
+    agent
     .post('/todos')
     .send({text})
     .expect(200)
@@ -46,7 +50,7 @@ describe('POST /todos',()=>{
   });
 
   it('should not create todo with invalid body data', (done)=>{
-    request(app)
+    agent
     .post('/todos')
     .send()
     .expect(400)
@@ -63,7 +67,7 @@ describe('POST /todos',()=>{
 
 describe('GET /todos',()=>{
   it('should get all todos',(done)=>{
-    request(app)
+    agent
     .get('/todos')
     .expect(200)
     .expect((res)=>{
@@ -75,7 +79,7 @@ describe('GET /todos',()=>{
 
 describe('GET /todos/:id',()=>{
   it('should return todo doc',(done)=>{
-    request(app)
+    agent
     .get(`/todos/${todos[1]._id.toHexString()}`)
     .expect(200)
     .expect((res)=>{
@@ -85,14 +89,14 @@ describe('GET /todos/:id',()=>{
   })
 
   it('should return 404 if todo not found', (done)=>{
-    request(app)
+    agent
     .get(`/todos/${(new ObjectID()).toHexString()}`)
     .expect(404)
     .end(done);
   })
 
   it('should return 404 for non-object ids', (done)=>{
-    request(app)
+    agent
     .get(`/todos/12345`)
     .expect(404)
     .end(done);
@@ -101,7 +105,7 @@ describe('GET /todos/:id',()=>{
 
 describe('DELETE /todos/:id',()=>{
   it('should remove a todo', (done)=>{
-      request(app)
+      agent
       .delete(`/todos/${todos[0]._id.toHexString()}`)
       .expect(200)
       .expect((res)=>{
@@ -119,16 +123,54 @@ describe('DELETE /todos/:id',()=>{
   });
 
   it('should return 404 if todo not found',(done)=>{
-    request(app)
+    agent
     .delete(`/todos/${(new ObjectID()).toHexString()}`)
     .expect(404)
     .end(done);
   });
-  
+
   it('should return 404 if object id is invalid',(done)=>{
-    request(app)
+    agent
     .delete(`/todos/12345`)
     .expect(404)
     .end(done);
   });
 });
+
+describe('PATCH /todos/:id', ()=>{
+  it('should update the todo',(done)=>{
+    let updatedText = 'updated test something todo 1'
+    agent
+    .patch(`/todos/${todos[0]._id.toHexString()}`)
+    .send({
+      text: updatedText,
+      completed: true
+    })
+    .expect(200)
+    .expect((res)=>{
+      expect(res.body.todo.text).toBe(updatedText);
+      expect(res.body.todo.completed).toBe(true);
+      expect(typeof res.body.todo.completedAt).toBe('number');
+    })
+    .end(done)
+
+  });
+
+  it('should clear completedAt when todo is not completed', (done)=>{
+    let updatedText = 'updated test something todo 2';
+    agent
+    .patch(`/todos/${todos[1]._id.toHexString()}`)
+    .send({
+      text: updatedText,
+      completed: false
+    })
+    .expect(200)
+    .expect((res)=>{
+      expect(res.body.todo.text).toBe(updatedText);
+      expect(res.body.todo.completed).toBe(false);
+      expect(res.body.todo.completedAt).toBeNull();
+    })
+    .end(done)
+  })
+
+})
