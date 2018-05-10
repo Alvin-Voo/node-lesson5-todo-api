@@ -26,6 +26,22 @@ app.get('/todos',(req,res)=>{
   )
 })
 
+
+app.get('/todos/:id',(req,res)=>{
+  let id = req.params.id
+
+  if(!mongoose.isValidId(id)){
+    return res.status(404).send();
+  }
+
+  Todo.findById(id).then(
+    (todo)=>{
+      if(todo) return res.send({todo})//objectify all return objects..
+      return res.status(404).send();
+    }
+  ).catch((err)=>res.status(400).send());
+})
+
 app.listen(3000, ()=>{
   console.log('started on port 3000')
 });
