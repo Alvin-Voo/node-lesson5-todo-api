@@ -9,6 +9,9 @@ let id = '5af29a39da6a7517e2ea6c4b';
 //id validation with native mongodb driver
 if(!ObjectID.isValid(id)) return console.log('ID not valid');
 
+//User.find
+//User.findOne
+
 User.findById(id).then((user)=>{
   if(!user) return console.log('user not found');
   console.log('user by id',user);
