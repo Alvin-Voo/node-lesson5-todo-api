@@ -1,7 +1,9 @@
 const mongoose = require('mongoose');
 const {ObjectID} = require('mongodb');
 
-mongoose.connect('mongodb://localhost:27017/TodoApp');
+const dbdomain = process.env.MONGODB_URI || 'mongodb://localhost:27017/TodoApp'
+
+mongoose.connect(dbdomain);
 mongoose.isValidId = ObjectID.isValid;
 
 

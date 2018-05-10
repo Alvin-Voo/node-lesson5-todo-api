@@ -42,8 +42,10 @@ app.get('/todos/:id',(req,res)=>{
   ).catch((err)=>res.status(400).send());
 })
 
-app.listen(3000, ()=>{
-  console.log('started on port 3000')
+const port = process.env.PORT||3000;
+
+app.listen(port, ()=>{
+  console.log('started on port '+port);
 });
 
 
