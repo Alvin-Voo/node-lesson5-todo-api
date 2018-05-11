@@ -9,6 +9,9 @@ const mongoose = require('./db/mongoose');
 const Todo = require('./models/Todo');
 const User = require('./models/User');
 
+//middlewares
+const {authenticate} = require('./middleware/authentication');
+
 let app = express();
 
 app.use(express.json());//<--- can now send json body as request to this server (API)
@@ -97,14 +100,8 @@ app.post('/users',(req,res)=>{
   })
 })
 
-app.get('/users/me',(req,res)=>{
-  let token = req.header('x-auth');
-
-  User.findByToken(token).then((user)=>{
-    if(!user) return Promise.reject();
-
-    res.send(user);
-  }).catch((e) => res.status(401).send());//not authorized
+app.get('/users/me', authenticate, (req,res)=>{ //authenticate is a callback function (or middleware)
+  res.send(req.user);
 })
 
 

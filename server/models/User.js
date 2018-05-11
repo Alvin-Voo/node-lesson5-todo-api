@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const bcrypt = require('bcryptjs');
 
 const _ = require('lodash');
 const jwt = require('jsonwebtoken');
@@ -52,7 +53,7 @@ userSchema.methods.generateAuthToken = function () {
 }
 
 userSchema.statics.findByToken = function (token) {
-  let User = this;
+  let user = this;
   let decoded;
 
   try{
@@ -61,11 +62,21 @@ userSchema.statics.findByToken = function (token) {
     return Promise.reject(); //return a rejected Promise if verification failed
   }
 
-  return User.findOne({
+  return user.findOne({
     '_id': decoded._id,
     'tokens.token' : token,
     'tokens.access' : 'auth'
   })
 }
+
+userSchema.pre('save', function(next){
+  let user = this;
+
+  if(user.isModified('password')){//check if the password key's value for the document is modified
+    //if modified, change it into a hash
+    user.password = bcrypt.hashSync(user.password,10);
+  }
+  next();
+})
 
 module.exports = mongoose.model('User',userSchema);
