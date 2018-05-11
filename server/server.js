@@ -13,6 +13,7 @@ let app = express();
 
 app.use(express.json());//<--- can now send json body as request to this server (API)
 
+//todos
 app.post('/todos',(req,res)=>{
   let todo = new Todo(req.body);
 
@@ -79,6 +80,33 @@ app.patch('/todos/:id',(req,res)=>{
       res.send({todo});
     }).catch((e)=>res.status(400).send());
 })
+
+//users
+app.post('/users',(req,res)=>{
+  let body = _.pick(req.body,['email','password']);
+  let user = new User(body);
+
+  user.save().then(()=>{
+      return user.generateAuthToken();
+  }).then((token)=>{
+    res.header('x-auth',token).send(user);//send the user
+    //(converted implicitly by user.toJSON()), which we already overwritten
+    //send the token back as a custom header x-auth
+  }).catch((e)=>{
+    res.status(400).send(e);//bad request
+  })
+})
+
+app.get('/users/me',(req,res)=>{
+  let token = req.header('x-auth');
+
+  User.findByToken(token).then((user)=>{
+    if(!user) return Promise.reject();
+
+    res.send(user);
+  }).catch((e) => res.status(401).send());//not authorized
+})
+
 
 app.listen(port, ()=>{
   console.log('started on port '+port);
