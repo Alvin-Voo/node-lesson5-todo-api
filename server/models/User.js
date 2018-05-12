@@ -41,7 +41,7 @@ userSchema.methods.toJSON = function(){//overwrite the toJSON method of mongoose
 }
 
 userSchema.methods.generateAuthToken = function () {
-  let user = this;//should be an object of the document instance
+  let user = this;//should be an object instance of the document instance
   let access = 'auth';
   let token = jwt.sign({_id:user._id.toHexString(), access}, 'abc123').toString();
 
@@ -53,7 +53,7 @@ userSchema.methods.generateAuthToken = function () {
 }
 
 userSchema.statics.findByToken = function (token) {
-  let user = this;
+  let User = this;//an object instance of Model
   let decoded;
 
   try{
@@ -62,11 +62,24 @@ userSchema.statics.findByToken = function (token) {
     return Promise.reject(); //return a rejected Promise if verification failed
   }
 
-  return user.findOne({
+  return User.findOne({
     '_id': decoded._id,
     'tokens.token' : token,
     'tokens.access' : 'auth'
   })
+}
+
+userSchema.statics.findByCredentials = function (email, password) {
+  let User = this;
+
+  return User.findOne({email}).then(
+    (user)=>{
+      if(!user) return Promise.reject();
+      //if got user compare password with hash
+      if(bcrypt.compareSync(password,user.password)) return user;
+      else return Promise.reject();
+    }
+  )
 }
 
 userSchema.pre('save', function(next){

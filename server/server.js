@@ -104,6 +104,20 @@ app.get('/users/me', authenticate, (req,res)=>{ //authenticate is a callback fun
   res.send(req.user);
 })
 
+app.post('/users/login',(req,res)=>{
+  let body = _.pick(req.body,['email','password']);
+
+  User.findByCredentials(body.email, body.password).then((user)=>{
+    return user.generateAuthToken().then((token)=>{
+      //have to use return, else if there's error in
+      //generateAuthToken the catch below won't work
+      res.header('x-auth',token).send(user);
+    });
+  }).catch((e)=>{
+    res.status(400).send();
+  })
+})
+
 
 app.listen(port, ()=>{
   console.log('started on port '+port);
