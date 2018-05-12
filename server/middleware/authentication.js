@@ -7,6 +7,7 @@ let authenticate = (req, res, next) =>{
     if(!user) return Promise.reject();
     // res.send(user);
     req.user = user;
+    req.token = token;
 
     next() //must pass next() in middleware to ensure the request continues
   }).catch((e) => res.status(401).send());//not authorized

@@ -7,8 +7,7 @@ const User = require('../../models/User');
 const userOneId = new ObjectID();
 const userTwoId = new ObjectID();
 
-//test datas to be sent to server
-
+//test datas to be stored in test DB
 const users = [{
   _id: userOneId,
   email: 'andrew@example.com',
