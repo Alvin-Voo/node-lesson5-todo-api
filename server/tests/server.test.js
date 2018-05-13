@@ -118,7 +118,8 @@ describe('DELETE /todos/:id',()=>{
           if(err) return done(err);
           Todo.findById(`${todos[0]._id.toHexString()}`).then(
             (todo)=>{
-              expect(todo).not.toEqual(expect.anything())//toNotExist
+              // expect(todo).not.toEqual(expect.anything())//toNotExist
+              expect(todo).toBeFalsy();
               done();
             }
           ).catch((e)=>done(e));
@@ -134,7 +135,8 @@ describe('DELETE /todos/:id',()=>{
           if(err) return done(err);
           Todo.findById(`${todos[0]._id.toHexString()}`).then(
             (todo)=>{
-              expect(todo).toEqual(expect.anything())//toExist
+              // expect(todo).toEqual(expect.anything())//toExist
+              expect(todo).toBeTruthy();
               done();
             }
           ).catch((e)=>done(e));
@@ -247,8 +249,8 @@ describe('POST /users',()=>{
     .send({email, password})
     .expect(200)
     .expect((res)=>{
-      expect(res.headers['x-auth']).not.toBeNull();
-      expect(res.body._id).not.toBeNull();
+      expect(res.headers['x-auth']).toBeTruthy();
+      expect(res.body._id).toBeTruthy();
       expect(res.body.email).toBe(email)
     })
     .end((err)=>{
@@ -256,7 +258,7 @@ describe('POST /users',()=>{
 
       //check in db
       User.findOne({email}).then((user)=>{
-        expect(user).not.toBeNull();
+        expect(user).toBeTruthy();
         expect(user.password).not.toBe(password);
         done();
       }).catch((e)=>done(e));
