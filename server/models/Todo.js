@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const User = require('./User');
 
 let todoSchema = mongoose.Schema({
   text: {
@@ -14,6 +15,11 @@ let todoSchema = mongoose.Schema({
   completedAt: {
     type:Number,
     default:null
+  },
+  _creator:{
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: 'User'
   }
 });
 

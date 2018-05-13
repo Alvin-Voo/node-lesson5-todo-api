@@ -17,8 +17,11 @@ let app = express();
 app.use(express.json());//<--- can now send json body as request to this server (API)
 
 //todos
-app.post('/todos',(req,res)=>{
-  let todo = new Todo(req.body);
+app.post('/todos',authenticate,(req,res)=>{
+  let todo = new Todo({
+      text: req.body.text,
+      _creator: req.user._id
+    });
 
   todo.save().then(
     (result)=>res.send(result),
@@ -26,8 +29,10 @@ app.post('/todos',(req,res)=>{
   )
 })
 
-app.get('/todos',(req,res)=>{
-  Todo.find().then(
+app.get('/todos',authenticate,(req,res)=>{
+  Todo.find({
+    _creator: req.user._id
+  }).then(
     (todos)=>{//this will return an array of doc(s)
       res.send({todos})//sending an object instead of just the array is better, since its more customizable
     },
@@ -36,14 +41,17 @@ app.get('/todos',(req,res)=>{
 })
 
 
-app.get('/todos/:id',(req,res)=>{
+app.get('/todos/:id',authenticate, (req,res)=>{
   let id = req.params.id
 
   if(!mongoose.isValidId(id)){
     return res.status(404).send();
   }
 
-  Todo.findById(id).then(
+  Todo.findOne({
+    _id: id,
+    _creator: req.user._id
+  }).then(
     (todo)=>{
       if(todo) return res.send({todo})//objectify all return objects..
       return res.status(404).send();
@@ -51,12 +59,15 @@ app.get('/todos/:id',(req,res)=>{
   ).catch((err)=>res.status(400).send());
 })
 
-app.delete('/todos/:id',(req,res)=>{
+app.delete('/todos/:id',authenticate,(req,res)=>{
   let id = req.params.id
 
   if(!mongoose.isValidId(id)) return res.status(404).send();
 
-  Todo.findByIdAndRemove(id).then(
+  Todo.findOneAndRemove({
+    _id:id,
+    _creator: req.user._id
+  }).then(
     (todo)=>{
       if(!todo) return res.status(404).end()
       return res.send({todo})
@@ -64,7 +75,7 @@ app.delete('/todos/:id',(req,res)=>{
   ).catch((err)=>res.status(400).send());
 })
 
-app.patch('/todos/:id',(req,res)=>{
+app.patch('/todos/:id',authenticate,(req,res)=>{
   let id = req.params.id;
   let body = _.pick(req.body, ['text','completed']);//request object is from user
 
@@ -77,7 +88,11 @@ app.patch('/todos/:id',(req,res)=>{
     body.completedAt = null;
   }
 
-  Todo.findByIdAndUpdate(id,{$set: body},{new:true}).then(
+  Todo.findOneAndUpdate({
+      _id:id,
+      _creator: req.user._id
+    }
+    ,{$set: body},{new:true}).then(
     (todo)=>{
       if(!todo) return res.status(404).end();
       res.send({todo});
